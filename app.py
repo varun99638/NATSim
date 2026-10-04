@@ -4,172 +4,109 @@ import plotly.graph_objects as go
 
 from src.nat_engine import NATEngine
 from src.packet_analyzer import PacketAnalyzer
+from src.packet_statistics import PacketStatistics
 
 
-# ============================================================
+# ---------------------------------------------------------
 # PAGE CONFIGURATION
-# ============================================================
+# ---------------------------------------------------------
 
 st.set_page_config(
-    page_title="NATSim — Network Address Translation Simulator",
+    page_title="NATSim",
     page_icon="🌐",
     layout="wide",
-    initial_sidebar_state="expanded",
 )
 
 
-# ============================================================
+# ---------------------------------------------------------
 # CUSTOM STYLING
-# ============================================================
+# ---------------------------------------------------------
 
 st.markdown(
     """
     <style>
+        .stApp {
+            background-color: #0b1120;
+            color: #e5e7eb;
+        }
 
-    .stApp {
-        background: #0b1120;
-        color: #e5e7eb;
-    }
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
 
-    section[data-testid="stSidebar"] {
-        background: #0f172a;
-        border-right: 1px solid #1f2937;
-    }
+        .metric-card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 120px;
+        }
 
-    .main-title {
-        font-size: 34px;
-        font-weight: 700;
-        color: #f8fafc;
-        margin-bottom: 4px;
-    }
+        .metric-title {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
 
-    .subtitle {
-        color: #94a3b8;
-        font-size: 15px;
-        margin-bottom: 24px;
-    }
+        .metric-value {
+            color: #f9fafb;
+            font-size: 30px;
+            font-weight: 700;
+        }
 
-    .status-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        background: rgba(34, 197, 94, 0.12);
-        color: #4ade80;
-        border: 1px solid rgba(34, 197, 94, 0.25);
-        font-size: 12px;
-        font-weight: 600;
-    }
+        .section-card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
 
-    .metric-card {
-        background: #111827;
-        border: 1px solid #1f2937;
-        border-radius: 12px;
-        padding: 18px;
-        min-height: 115px;
-    }
+        .flow-card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+        }
 
-    .metric-label {
-        color: #94a3b8;
-        font-size: 13px;
-        margin-bottom: 8px;
-    }
+        .success-text {
+            color: #22c55e;
+            font-weight: 600;
+        }
 
-    .metric-value {
-        color: #f8fafc;
-        font-size: 28px;
-        font-weight: 700;
-    }
+        .danger-text {
+            color: #ef4444;
+            font-weight: 600;
+        }
 
-    .section-card {
-        background: #111827;
-        border: 1px solid #1f2937;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 16px;
-    }
+        .info-text {
+            color: #60a5fa;
+            font-weight: 600;
+        }
 
-    .packet-flow {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 18px;
-        margin: 24px 0;
-    }
-
-    .endpoint {
-        background: #0f172a;
-        border: 1px solid #334155;
-        border-radius: 10px;
-        padding: 14px 20px;
-        text-align: center;
-        min-width: 190px;
-    }
-
-    .endpoint-title {
-        color: #94a3b8;
-        font-size: 12px;
-        margin-bottom: 6px;
-    }
-
-    .endpoint-value {
-        color: #f8fafc;
-        font-weight: 600;
-        font-size: 15px;
-    }
-
-    .arrow {
-        color: #60a5fa;
-        font-size: 28px;
-        font-weight: bold;
-    }
-
-    .success-box {
-        background: rgba(34, 197, 94, 0.08);
-        border: 1px solid rgba(34, 197, 94, 0.25);
-        border-radius: 10px;
-        padding: 16px;
-        color: #86efac;
-    }
-
-    .warning-box {
-        background: rgba(245, 158, 11, 0.08);
-        border: 1px solid rgba(245, 158, 11, 0.25);
-        border-radius: 10px;
-        padding: 16px;
-        color: #fcd34d;
-    }
-
-    .danger-box {
-        background: rgba(239, 68, 68, 0.08);
-        border: 1px solid rgba(239, 68, 68, 0.25);
-        border-radius: 10px;
-        padding: 16px;
-        color: #fca5a5;
-    }
-
-    .info-box {
-        background: rgba(59, 130, 246, 0.08);
-        border: 1px solid rgba(59, 130, 246, 0.25);
-        border-radius: 10px;
-        padding: 16px;
-        color: #93c5fd;
-    }
-
+        h1, h2, h3 {
+            color: #f9fafb;
+        }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 
-# ============================================================
+# ---------------------------------------------------------
 # SESSION STATE
-# ============================================================
+# ---------------------------------------------------------
 
 if "nat_engine" not in st.session_state:
     st.session_state.nat_engine = NATEngine()
 
 if "packet_analyzer" not in st.session_state:
     st.session_state.packet_analyzer = PacketAnalyzer()
+
+if "packet_statistics" not in st.session_state:
+    st.session_state.packet_statistics = PacketStatistics()
 
 if "packets_sent" not in st.session_state:
     st.session_state.packets_sent = 0
@@ -186,14 +123,21 @@ if "last_packet" not in st.session_state:
 if "analyzed_packets" not in st.session_state:
     st.session_state.analyzed_packets = {}
 
+if "statistics_snapshot" not in st.session_state:
+    st.session_state.statistics_snapshot = None
+
+if "statistics_packet_count" not in st.session_state:
+    st.session_state.statistics_packet_count = -1
+
 
 nat_engine = st.session_state.nat_engine
 packet_analyzer = st.session_state.packet_analyzer
+packet_statistics = st.session_state.packet_statistics
 
 
-# ============================================================
+# ---------------------------------------------------------
 # DEVICE CONFIGURATION
-# ============================================================
+# ---------------------------------------------------------
 
 DEVICES = {
     "PC-1": {
@@ -211,32 +155,311 @@ DEVICES = {
 }
 
 
-# ============================================================
+# ---------------------------------------------------------
 # TOPOLOGY
-# ============================================================
+# ---------------------------------------------------------
 
 def create_topology():
 
-    graph = nx.Graph()
+    graph = nx.DiGraph()
 
-    positions = {
-        "PC-1": (-2, 1),
-        "PC-2": (-2, 0),
-        "PC-3": (-2, -1),
-        "NAT Router": (0, 0),
-        "Internet": (2, 0),
-        "Web Server": (4, 0),
-    }
+    graph.add_node(
+        "PC-1",
+        category="private",
+    )
 
-    edges = [
-        ("PC-1", "NAT Router"),
-        ("PC-2", "NAT Router"),
-        ("PC-3", "NAT Router"),
-        ("NAT Router", "Internet"),
-        ("Internet", "Web Server"),
+    graph.add_node(
+        "PC-2",
+        category="private",
+    )
+
+    graph.add_node(
+        "PC-3",
+        category="private",
+    )
+
+    graph.add_node(
+        "NAT Router",
+        category="nat",
+    )
+
+    graph.add_node(
+        "Internet",
+        category="internet",
+    )
+
+    graph.add_node(
+        "Web Server",
+        category="server",
+    )
+
+    graph.add_edges_from(
+        [
+            ("PC-1", "NAT Router"),
+            ("PC-2", "NAT Router"),
+            ("PC-3", "NAT Router"),
+            ("NAT Router", "Internet"),
+            ("Internet", "Web Server"),
+        ]
+    )
+
+    return graph
+
+
+# ---------------------------------------------------------
+# PACKET PROCESSING
+# ---------------------------------------------------------
+
+def process_packet(
+    source_device,
+    protocol,
+    nat_type,
+):
+
+    device = DEVICES[source_device]
+
+    private_ip = device["ip"]
+    private_port = device["port"]
+
+    packet_number = (
+        len(st.session_state.packet_history) + 1
+    )
+
+    try:
+
+        if nat_type == "PAT":
+
+            mapping = nat_engine.pat_translate(
+                private_ip,
+                private_port,
+                protocol,
+            )
+
+            private_endpoint = (
+                f"{private_ip}:{private_port}"
+            )
+
+            public_endpoint = (
+                f"{mapping.public_ip}:{mapping.public_port}"
+            )
+
+        elif nat_type == "Static NAT":
+
+            mapping = nat_engine.static_translate(
+                private_ip
+            )
+
+            private_endpoint = private_ip
+
+            public_endpoint = mapping.public_ip
+
+        else:
+
+            mapping = nat_engine.dynamic_translate(
+                private_ip
+            )
+
+            private_endpoint = private_ip
+
+            public_endpoint = mapping.public_ip
+
+        packet = {
+            "id": packet_number,
+            "source": source_device,
+            "protocol": protocol,
+            "nat_type": mapping.nat_type,
+            "private": private_endpoint,
+            "public": public_endpoint,
+            "status": "TRANSLATED",
+        }
+
+        st.session_state.packets_sent += 1
+
+    except Exception as error:
+
+        packet = {
+            "id": packet_number,
+            "source": source_device,
+            "protocol": protocol,
+            "nat_type": nat_type,
+            "private": (
+                f"{private_ip}:{private_port}"
+            ),
+            "public": "",
+            "status": "DROPPED",
+            "error": str(error),
+        }
+
+        st.session_state.packets_dropped += 1
+
+    st.session_state.packet_history.append(packet)
+    st.session_state.last_packet = packet
+
+    return packet
+
+
+# ---------------------------------------------------------
+# PACKET ANALYSIS
+# ---------------------------------------------------------
+
+def get_packet_analysis(packet):
+
+    packet_id = packet.get("id")
+
+    if packet_id not in st.session_state.analyzed_packets:
+
+        analysis = packet_analyzer.analyze(packet)
+
+        st.session_state.analyzed_packets[
+            packet_id
+        ] = analysis
+
+    return st.session_state.analyzed_packets[
+        packet_id
     ]
 
-    graph.add_edges_from(edges)
+
+# ---------------------------------------------------------
+# STATISTICS
+# ---------------------------------------------------------
+
+def get_packet_statistics():
+
+    packets = st.session_state.packet_history
+
+    packet_count = len(packets)
+
+    if (
+        st.session_state.statistics_snapshot is None
+        or
+        st.session_state.statistics_packet_count
+        != packet_count
+    ):
+
+        if packet_count == 0:
+
+            statistics = (
+                packet_statistics.get_empty_summary()
+            )
+
+        else:
+
+            statistics = packet_statistics.analyze(
+                packets
+            )
+
+        st.session_state.statistics_snapshot = (
+            statistics
+        )
+
+        st.session_state.statistics_packet_count = (
+            packet_count
+        )
+
+    return st.session_state.statistics_snapshot
+
+
+# ---------------------------------------------------------
+# METRIC CARD
+# ---------------------------------------------------------
+
+def metric_card(title, value):
+
+    st.html(
+        f"""
+        <div class="metric-card">
+            <div class="metric-title">
+                {title}
+            </div>
+
+            <div class="metric-value">
+                {value}
+            </div>
+        </div>
+        """
+    )
+
+
+# ---------------------------------------------------------
+# SIDEBAR
+# ---------------------------------------------------------
+
+st.sidebar.title("🌐 NATSim")
+
+st.sidebar.caption(
+    "Network Address Translation Simulator"
+)
+
+page = st.sidebar.radio(
+    "Navigation",
+    [
+        "Dashboard",
+        "Network Topology",
+        "Packet Simulator",
+        "Packet Inspector",
+        "NAT Table",
+        "Analytics",
+    ],
+)
+
+
+# ---------------------------------------------------------
+# DASHBOARD
+# ---------------------------------------------------------
+
+if page == "Dashboard":
+
+    st.title("🌐 NATSim Dashboard")
+
+    st.write(
+        "Interactive Network Address Translation "
+        "and Packet Flow Simulator"
+    )
+
+    st.markdown("### Network Overview")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        metric_card(
+            "Packets Sent",
+            st.session_state.packets_sent,
+        )
+
+    with col2:
+        metric_card(
+            "Packets Dropped",
+            st.session_state.packets_dropped,
+        )
+
+    with col3:
+        metric_card(
+            "NAT Mappings",
+            len(
+                nat_engine.get_translation_table()
+            ),
+        )
+
+    with col4:
+        metric_card(
+            "Packets Analyzed",
+            len(
+                st.session_state.analyzed_packets
+            ),
+        )
+
+    st.markdown("### Current Network")
+
+    graph = create_topology()
+
+    positions = {
+        "PC-1": (0, 2),
+        "PC-2": (0, 1),
+        "PC-3": (0, 0),
+        "NAT Router": (2, 1),
+        "Internet": (4, 1),
+        "Web Server": (6, 1),
+    }
 
     edge_x = []
     edge_y = []
@@ -255,7 +478,7 @@ def create_topology():
         mode="lines",
         line=dict(
             width=2,
-            color="#334155",
+            color="#475569",
         ),
         hoverinfo="none",
     )
@@ -263,7 +486,6 @@ def create_topology():
     node_x = []
     node_y = []
     node_text = []
-    node_colors = []
 
     for node in graph.nodes():
 
@@ -271,29 +493,7 @@ def create_topology():
 
         node_x.append(x)
         node_y.append(y)
-
-        if node in DEVICES:
-
-            node_text.append(
-                f"{node}<br>{DEVICES[node]['ip']}"
-            )
-
-            node_colors.append("#3b82f6")
-
-        elif node == "NAT Router":
-
-            node_text.append(node)
-            node_colors.append("#8b5cf6")
-
-        elif node == "Internet":
-
-            node_text.append(node)
-            node_colors.append("#22c55e")
-
-        else:
-
-            node_text.append(node)
-            node_colors.append("#f59e0b")
+        node_text.append(node)
 
     node_trace = go.Scatter(
         x=node_x,
@@ -301,15 +501,15 @@ def create_topology():
         mode="markers+text",
         text=node_text,
         textposition="bottom center",
-        hoverinfo="text",
         marker=dict(
-            size=34,
-            color=node_colors,
+            size=35,
+            color="#2563eb",
             line=dict(
                 width=2,
-                color="#e2e8f0",
+                color="#93c5fd",
             ),
         ),
+        hoverinfo="text",
     )
 
     figure = go.Figure(
@@ -320,474 +520,192 @@ def create_topology():
     )
 
     figure.update_layout(
-        height=420,
+        height=400,
         paper_bgcolor="#0b1120",
         plot_bgcolor="#0b1120",
         showlegend=False,
+        xaxis=dict(
+            visible=False
+        ),
+        yaxis=dict(
+            visible=False
+        ),
         margin=dict(
             l=20,
             r=20,
             t=20,
             b=20,
         ),
-        xaxis=dict(
-            showgrid=False,
-            zeroline=False,
-            showticklabels=False,
-        ),
-        yaxis=dict(
-            showgrid=False,
-            zeroline=False,
-            showticklabels=False,
-        ),
     )
-
-    return figure
-
-
-# ============================================================
-# PACKET PROCESSING
-# ============================================================
-
-def process_packet(source_device, nat_mode, protocol):
-
-    device = DEVICES[source_device]
-
-    private_ip = device["ip"]
-    private_port = device["port"]
-
-    packet_number = (
-        len(st.session_state.packet_history) + 1
-    )
-
-    try:
-
-        # PAT
-        if nat_mode == "PAT":
-
-            mapping = nat_engine.pat_translate(
-                private_ip,
-                private_port,
-                protocol,
-            )
-
-        # Static NAT
-        elif nat_mode == "Static NAT":
-
-            mapping = nat_engine.static_translate(
-                private_ip,
-            )
-
-        # Dynamic NAT
-        else:
-
-            mapping = nat_engine.dynamic_translate(
-                private_ip,
-            )
-
-        # Successful translation
-        if mapping:
-
-            private_endpoint = (
-                f"{mapping.private_ip}:"
-                f"{mapping.private_port}"
-            )
-
-            public_endpoint = (
-                f"{mapping.public_ip}:"
-                f"{mapping.public_port}"
-            )
-
-            packet = {
-                "id": packet_number,
-                "source": source_device,
-                "protocol": protocol,
-                "nat_type": mapping.nat_type,
-                "private": private_endpoint,
-                "public": public_endpoint,
-                "status": "TRANSLATED",
-            }
-
-            st.session_state.packets_sent += 1
-
-        # Translation failed
-        else:
-
-            packet = {
-                "id": packet_number,
-                "source": source_device,
-                "protocol": protocol,
-                "nat_type": nat_mode,
-                "private": (
-                    f"{private_ip}:"
-                    f"{private_port}"
-                ),
-                "public": "",
-                "status": "DROPPED",
-            }
-
-            st.session_state.packets_dropped += 1
-
-    except Exception as error:
-
-        packet = {
-            "id": packet_number,
-            "source": source_device,
-            "protocol": protocol,
-            "nat_type": nat_mode,
-            "private": (
-                f"{private_ip}:"
-                f"{private_port}"
-            ),
-            "public": "",
-            "status": "DROPPED",
-            "error": str(error),
-        }
-
-        st.session_state.packets_dropped += 1
-
-    st.session_state.packet_history.append(packet)
-    st.session_state.last_packet = packet
-
-    return packet
-
-
-# ============================================================
-# PACKET ANALYSIS
-# ============================================================
-
-def get_packet_analysis(packet):
-
-    packet_id = packet["id"]
-
-    if packet_id not in st.session_state.analyzed_packets:
-
-        analysis = packet_analyzer.analyze(packet)
-
-        st.session_state.analyzed_packets[
-            packet_id
-        ] = analysis
-
-    return st.session_state.analyzed_packets[
-        packet_id
-    ]
-
-
-# ============================================================
-# SIDEBAR
-# ============================================================
-
-with st.sidebar:
-
-    st.html(
-        """
-        <div style="
-            font-size:28px;
-            font-weight:700;
-            color:#f8fafc;
-        ">
-            🌐 NATSim
-        </div>
-
-        <div style="
-            color:#64748b;
-            font-size:13px;
-            margin-bottom:20px;
-        ">
-            Network Address Translation Simulator
-        </div>
-        """
-    )
-
-    st.html(
-        """
-        <span class="status-badge">
-            ● SIMULATION READY
-        </span>
-        """
-    )
-
-    st.divider()
-
-    page = st.radio(
-        "Navigation",
-        [
-            "Dashboard",
-            "Network Topology",
-            "Packet Simulator",
-            "Packet Inspector",
-            "NAT Table",
-            "Analytics",
-        ],
-    )
-
-    st.divider()
-
-    st.caption("NATSim v0.4.2")
-    st.caption(
-        "Network Diagnostics & Packet Intelligence"
-    )
-
-
-# ============================================================
-# DASHBOARD
-# ============================================================
-
-if page == "Dashboard":
-
-    st.html(
-        """
-        <div class="main-title">
-            Network Dashboard
-        </div>
-
-        <div class="subtitle">
-            Monitor NAT translations, packet activity and network flow.
-        </div>
-        """
-    )
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-
-        st.html(
-            f"""
-            <div class="metric-card">
-
-                <div class="metric-label">
-                    Packets Sent
-                </div>
-
-                <div class="metric-value">
-                    {st.session_state.packets_sent}
-                </div>
-
-            </div>
-            """
-        )
-
-    with col2:
-
-        st.html(
-            f"""
-            <div class="metric-card">
-
-                <div class="metric-label">
-                    Packets Dropped
-                </div>
-
-                <div class="metric-value">
-                    {st.session_state.packets_dropped}
-                </div>
-
-            </div>
-            """
-        )
-
-    with col3:
-
-        st.html(
-            f"""
-            <div class="metric-card">
-
-                <div class="metric-label">
-                    NAT Mappings
-                </div>
-
-                <div class="metric-value">
-                    {len(nat_engine.get_translation_table())}
-                </div>
-
-            </div>
-            """
-        )
-
-    with col4:
-
-        st.html(
-            f"""
-            <div class="metric-card">
-
-                <div class="metric-label">
-                    Packets Analyzed
-                </div>
-
-                <div class="metric-value">
-                    {len(st.session_state.analyzed_packets)}
-                </div>
-
-            </div>
-            """
-        )
-
-    st.write("")
-
-    st.markdown("### 🌐 Network Topology")
 
     st.plotly_chart(
-        create_topology(),
-        width="stretch",
-        config={
-            "displayModeBar": False
-        },
+        figure,
+        use_container_width=True,
     )
 
-    st.markdown("### 📡 Live Packet Activity")
 
-    if st.session_state.packet_history:
-
-        for packet in reversed(
-            st.session_state.packet_history[-5:]
-        ):
-
-            if packet["status"] == "TRANSLATED":
-                icon = "🟢"
-            else:
-                icon = "🔴"
-
-            st.html(
-                f"""
-                <div class="section-card">
-
-                    {icon}
-
-                    <strong>
-                        Packet #{packet["id"]}
-                    </strong>
-
-                    &nbsp;
-
-                    {packet["source"]}
-
-                    &nbsp; → &nbsp;
-
-                    {packet["protocol"]}
-
-                    &nbsp; | &nbsp;
-
-                    {packet["nat_type"]}
-
-                    &nbsp; | &nbsp;
-
-                    <strong>
-                        {packet["status"]}
-                    </strong>
-
-                </div>
-                """
-            )
-
-    else:
-
-        st.info("No packet activity yet.")
-
-
-# ============================================================
+# ---------------------------------------------------------
 # NETWORK TOPOLOGY
-# ============================================================
+# ---------------------------------------------------------
 
 elif page == "Network Topology":
 
-    st.html(
-        """
-        <div class="main-title">
-            Network Topology
-        </div>
+    st.title("🖧 Network Topology")
 
-        <div class="subtitle">
-            Visual representation of the simulated private and public network.
-        </div>
-        """
+    st.write(
+        "Visual representation of the simulated "
+        "private and public network."
+    )
+
+    graph = create_topology()
+
+    positions = {
+        "PC-1": (0, 2),
+        "PC-2": (0, 1),
+        "PC-3": (0, 0),
+        "NAT Router": (2, 1),
+        "Internet": (4, 1),
+        "Web Server": (6, 1),
+    }
+
+    edge_x = []
+    edge_y = []
+
+    for source, target in graph.edges():
+
+        x0, y0 = positions[source]
+        x1, y1 = positions[target]
+
+        edge_x.extend(
+            [x0, x1, None]
+        )
+
+        edge_y.extend(
+            [y0, y1, None]
+        )
+
+    edge_trace = go.Scatter(
+        x=edge_x,
+        y=edge_y,
+        mode="lines",
+        line=dict(
+            width=3,
+            color="#64748b",
+        ),
+        hoverinfo="none",
+    )
+
+    node_x = []
+    node_y = []
+    node_text = []
+
+    for node in graph.nodes():
+
+        x, y = positions[node]
+
+        node_x.append(x)
+        node_y.append(y)
+
+        node_text.append(node)
+
+    node_trace = go.Scatter(
+        x=node_x,
+        y=node_y,
+        mode="markers+text",
+        text=node_text,
+        textposition="bottom center",
+        marker=dict(
+            size=42,
+            color="#2563eb",
+            line=dict(
+                width=2,
+                color="#bfdbfe",
+            ),
+        ),
+        hoverinfo="text",
+    )
+
+    figure = go.Figure(
+        data=[
+            edge_trace,
+            node_trace,
+        ]
+    )
+
+    figure.update_layout(
+        height=500,
+        paper_bgcolor="#0b1120",
+        plot_bgcolor="#0b1120",
+        showlegend=False,
+        xaxis=dict(
+            visible=False
+        ),
+        yaxis=dict(
+            visible=False
+        ),
+        margin=dict(
+            l=20,
+            r=20,
+            t=20,
+            b=20,
+        ),
     )
 
     st.plotly_chart(
-        create_topology(),
-        width="stretch",
-        config={
-            "displayModeBar": False
-        },
+        figure,
+        use_container_width=True,
     )
 
-    st.markdown("### Connected Devices")
+    st.markdown("### Devices")
 
-    cols = st.columns(3)
+    device_columns = st.columns(3)
 
-    for index, (device, details) in enumerate(
-        DEVICES.items()
-    ):
+    for index, (
+        device_name,
+        device_info,
+    ) in enumerate(DEVICES.items()):
 
-        with cols[index]:
+        with device_columns[index]:
 
             st.html(
                 f"""
                 <div class="section-card">
+                    <h3>{device_name}</h3>
 
-                    <div style="font-size:20px;">
-                        💻
-                    </div>
+                    <p>
+                        Private IP:
+                        <b>{device_info["ip"]}</b>
+                    </p>
 
-                    <h4>
-                        {device}
-                    </h4>
-
-                    <div style="color:#94a3b8;">
-                        Private IP
-                    </div>
-
-                    <strong>
-                        {details["ip"]}
-                    </strong>
-
-                    <br><br>
-
-                    <div style="color:#94a3b8;">
-                        Port
-                    </div>
-
-                    <strong>
-                        {details["port"]}
-                    </strong>
-
+                    <p>
+                        Port:
+                        <b>{device_info["port"]}</b>
+                    </p>
                 </div>
                 """
             )
 
 
-# ============================================================
+# ---------------------------------------------------------
 # PACKET SIMULATOR
-# ============================================================
+# ---------------------------------------------------------
 
 elif page == "Packet Simulator":
 
-    st.html(
-        """
-        <div class="main-title">
-            Packet Simulator
-        </div>
+    st.title("📦 Packet Simulator")
 
-        <div class="subtitle">
-            Generate packets and observe how NAT translates private addresses.
-        </div>
-        """
+    st.write(
+        "Generate packets and observe how NAT "
+        "translates private addresses."
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
 
         source_device = st.selectbox(
             "Source Device",
             list(DEVICES.keys()),
-        )
-
-        nat_mode = st.selectbox(
-            "NAT Mode",
-            [
-                "PAT",
-                "Static NAT",
-                "Dynamic NAT",
-            ],
         )
 
     with col2:
@@ -801,67 +719,67 @@ elif page == "Packet Simulator":
             ],
         )
 
-        st.write("")
+    with col3:
 
-        if st.button(
-            "🚀 Send Packet",
-            width="stretch",
-            type="primary",
-        ):
+        nat_type = st.selectbox(
+            "NAT Type",
+            [
+                "PAT",
+                "Static NAT",
+                "Dynamic NAT",
+            ],
+        )
 
-            process_packet(
-                source_device,
-                nat_mode,
-                protocol,
-            )
+    if st.button(
+        "🚀 Send Packet",
+        use_container_width=True,
+    ):
 
-            st.rerun()
-
-    st.divider()
-
-    if st.session_state.last_packet:
-
-        packet = st.session_state.last_packet
+        packet = process_packet(
+            source_device,
+            protocol,
+            nat_type,
+        )
 
         if packet["status"] == "TRANSLATED":
 
             st.success(
-                f"Packet #{packet['id']} successfully translated."
+                "Packet translated successfully."
             )
 
         else:
 
             st.error(
-                f"Packet #{packet['id']} was dropped."
+                "Packet dropped during translation."
             )
 
-            if "error" in packet:
+    if st.session_state.last_packet:
 
-                st.caption(
-                    f"Diagnostic error: {packet['error']}"
-                )
+        packet = st.session_state.last_packet
+
+        st.markdown("### Latest Packet")
 
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
 
             st.metric(
-                "Source",
-                packet["source"],
+                "Packet ID",
+                packet["id"],
             )
 
         with col2:
 
             st.metric(
-                "Protocol",
-                packet["protocol"],
+                "Source",
+                packet["source"],
             )
 
         with col3:
 
             st.metric(
-                "NAT Type",
-                packet["nat_type"],
+                "Protocol",
+                packet["protocol"],
             )
 
         with col4:
@@ -871,574 +789,541 @@ elif page == "Packet Simulator":
                 packet["status"],
             )
 
-        public_endpoint = (
-            packet["public"]
-            if packet["public"]
-            else "N/A"
+        st.markdown("### Translation")
+
+        flow_col1, flow_col2, flow_col3 = st.columns(
+            [2, 1, 2]
         )
 
-        st.html(
-            f"""
-            <div class="packet-flow">
+        with flow_col1:
 
-                <div class="endpoint">
-
-                    <div class="endpoint-title">
-                        PRIVATE ENDPOINT
-                    </div>
-
-                    <div class="endpoint-value">
-                        {packet["private"]}
-                    </div>
-
+            st.html(
+                f"""
+                <div class="flow-card">
+                    <h3>Private</h3>
+                    <p>{packet["private"]}</p>
                 </div>
+                """
+            )
 
-                <div class="arrow">
-                    →
+        with flow_col2:
+
+            st.markdown(
+                "<h2 style='text-align:center;'>→</h2>",
+                unsafe_allow_html=True,
+            )
+
+        with flow_col3:
+
+            st.html(
+                f"""
+                <div class="flow-card">
+                    <h3>Public</h3>
+                    <p>
+                        {packet["public"]
+                        if packet["public"]
+                        else "N/A"}
+                    </p>
                 </div>
-
-                <div class="endpoint">
-
-                    <div class="endpoint-title">
-                        NAT ROUTER
-                    </div>
-
-                    <div class="endpoint-value">
-                        {packet["nat_type"]}
-                    </div>
-
-                </div>
-
-                <div class="arrow">
-                    →
-                </div>
-
-                <div class="endpoint">
-
-                    <div class="endpoint-title">
-                        PUBLIC ENDPOINT
-                    </div>
-
-                    <div class="endpoint-value">
-                        {public_endpoint}
-                    </div>
-
-                </div>
-
-            </div>
-            """
-        )
+                """
+            )
 
 
-# ============================================================
+# ---------------------------------------------------------
 # PACKET INSPECTOR
-# ============================================================
+# ---------------------------------------------------------
 
 elif page == "Packet Inspector":
 
-    st.html(
-        """
-        <div class="main-title">
-            Packet Inspector
-        </div>
-
-        <div class="subtitle">
-            Inspect packet headers, NAT translation and automatic diagnostics.
-        </div>
-        """
-    )
+    st.title("🔍 Packet Inspector")
 
     packets = st.session_state.packet_history
 
     if not packets:
 
-        st.html(
-            """
-            <div class="info-box">
-
-                <strong>
-                    No packets available.
-                </strong>
-
-                <br><br>
-
-                Send a packet from the
-                Packet Simulator to inspect it here.
-
-            </div>
-            """
+        st.info(
+            "No packets available. "
+            "Send a packet from the Packet Simulator first."
         )
 
     else:
 
-        packet_labels = [
-            (
-                f"Packet #{packet['id']} — "
-                f"{packet['source']} — "
-                f"{packet['protocol']} — "
-                f"{packet['status']}"
-            )
+        packet_ids = [
+            packet["id"]
             for packet in packets
         ]
 
-        selected_label = st.selectbox(
+        selected_id = st.selectbox(
             "Select Packet",
-            packet_labels,
+            packet_ids,
         )
 
-        selected_index = packet_labels.index(
-            selected_label
+        selected_packet = next(
+            packet
+            for packet in packets
+            if packet["id"] == selected_id
         )
-
-        selected_packet = packets[selected_index]
 
         analysis = get_packet_analysis(
             selected_packet
         )
 
-        st.divider()
-
-        # ----------------------------------------------------
-        # PACKET OVERVIEW
-        # ----------------------------------------------------
-
-        st.markdown("### 📦 Packet Overview")
+        st.markdown("### Packet Overview")
 
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
 
-            st.metric(
+            metric_card(
                 "Packet ID",
                 analysis["packet_id"],
             )
 
         with col2:
 
-            st.metric(
+            metric_card(
                 "Source",
                 analysis["source"],
             )
 
         with col3:
 
-            st.metric(
+            metric_card(
                 "Protocol",
                 analysis["protocol"],
             )
 
         with col4:
 
-            st.metric(
+            metric_card(
                 "NAT Type",
                 analysis["nat_type"],
             )
 
-        st.write("")
+        st.markdown("### Translation Flow")
 
-        # ----------------------------------------------------
-        # TRANSLATION FLOW
-        # ----------------------------------------------------
-
-        st.markdown("### 🔄 Translation Flow")
-
-        private_endpoint = (
-            f"{analysis['private_ip']}:"
-            f"{analysis['private_port']}"
+        col1, col2, col3 = st.columns(
+            [2, 1, 2]
         )
 
-        if analysis["public_ip"]:
+        with col1:
 
-            public_endpoint = (
-                f"{analysis['public_ip']}:"
-                f"{analysis['public_port']}"
+            st.html(
+                f"""
+                <div class="flow-card">
+                    <h3>Private Endpoint</h3>
+                    <p>
+                        {analysis["private_ip"]}
+                        :
+                        {analysis["private_port"]}
+                    </p>
+                </div>
+                """
+            )
+
+        with col2:
+
+            st.markdown(
+                "<h2 style='text-align:center;'>→</h2>",
+                unsafe_allow_html=True,
+            )
+
+        with col3:
+
+            st.html(
+                f"""
+                <div class="flow-card">
+                    <h3>Public Endpoint</h3>
+                    <p>
+                        {
+                            analysis["public_ip"]
+                            if analysis["public_ip"]
+                            else "N/A"
+                        }
+                        {
+                            ":" + analysis["public_port"]
+                            if analysis["public_port"]
+                            else ""
+                        }
+                    </p>
+                </div>
+                """
+            )
+
+        st.markdown("### Translation Status")
+
+        if (
+            analysis["translation"]
+            == "NAT translation successful"
+        ):
+
+            st.success(
+                analysis["translation"]
             )
 
         else:
 
-            public_endpoint = "N/A"
+            st.error(
+                analysis["translation"]
+            )
 
-        st.html(
-            f"""
-            <div class="packet-flow">
+        st.markdown("### Diagnostic")
 
-                <div class="endpoint">
-
-                    <div class="endpoint-title">
-                        PRIVATE ADDRESS
-                    </div>
-
-                    <div class="endpoint-value">
-                        {private_endpoint}
-                    </div>
-
-                </div>
-
-                <div class="arrow">
-                    →
-                </div>
-
-                <div class="endpoint">
-
-                    <div class="endpoint-title">
-                        NAT ROUTER
-                    </div>
-
-                    <div class="endpoint-value">
-                        {analysis["nat_type"]}
-                    </div>
-
-                </div>
-
-                <div class="arrow">
-                    →
-                </div>
-
-                <div class="endpoint">
-
-                    <div class="endpoint-title">
-                        PUBLIC ADDRESS
-                    </div>
-
-                    <div class="endpoint-value">
-                        {public_endpoint}
-                    </div>
-
-                </div>
-
-            </div>
-            """
+        st.info(
+            analysis["diagnostic"]
         )
 
-        # ----------------------------------------------------
-        # PACKET DETAILS
-        # ----------------------------------------------------
+        with st.expander(
+            "View Raw Packet"
+        ):
 
-        st.markdown("### 🔍 Packet Details")
-
-        detail_col1, detail_col2 = st.columns(2)
-
-        with detail_col1:
-
-            st.html(
-                f"""
-                <div class="section-card">
-
-                    <h4>
-                        Private Network
-                    </h4>
-
-                    <b>
-                        IP Address
-                    </b>
-
-                    <br>
-
-                    {analysis["private_ip"]}
-
-                    <br><br>
-
-                    <b>
-                        Port
-                    </b>
-
-                    <br>
-
-                    {analysis["private_port"]}
-
-                </div>
-                """
+            st.json(
+                selected_packet
             )
 
-        with detail_col2:
 
-            st.html(
-                f"""
-                <div class="section-card">
-
-                    <h4>
-                        Public Network
-                    </h4>
-
-                    <b>
-                        IP Address
-                    </b>
-
-                    <br>
-
-                    {analysis["public_ip"] or "N/A"}
-
-                    <br><br>
-
-                    <b>
-                        Port
-                    </b>
-
-                    <br>
-
-                    {analysis["public_port"] or "N/A"}
-
-                </div>
-                """
-            )
-
-        # ----------------------------------------------------
-        # TRANSLATION STATUS
-        # ----------------------------------------------------
-
-        st.markdown("### 📡 Translation Status")
-
-        if analysis["status"] == "TRANSLATED":
-
-            st.html(
-                f"""
-                <div class="success-box">
-
-                    <strong>
-                        ✓ NAT Translation Successful
-                    </strong>
-
-                    <br><br>
-
-                    {analysis["translation"]}
-
-                </div>
-                """
-            )
-
-        else:
-
-            st.html(
-                f"""
-                <div class="danger-box">
-
-                    <strong>
-                        ✕ NAT Translation Failed
-                    </strong>
-
-                    <br><br>
-
-                    {analysis["translation"]}
-
-                </div>
-                """
-            )
-
-        st.write("")
-
-        # ----------------------------------------------------
-        # AUTOMATIC DIAGNOSTIC
-        # ----------------------------------------------------
-
-        st.markdown("### 🧠 Automatic Diagnostic")
-
-        if analysis["status"] == "TRANSLATED":
-
-            diagnostic_class = "success-box"
-
-        else:
-
-            diagnostic_class = "warning-box"
-
-        st.html(
-            f"""
-            <div class="{diagnostic_class}">
-
-                <strong>
-                    Diagnostic Result
-                </strong>
-
-                <br><br>
-
-                {analysis["diagnostic"]}
-
-            </div>
-            """
-        )
-
-        st.write("")
-
-        # ----------------------------------------------------
-        # RAW PACKET
-        # ----------------------------------------------------
-
-        with st.expander("View Raw Packet Data"):
-
-            st.json(selected_packet)
-
-
-# ============================================================
+# ---------------------------------------------------------
 # NAT TABLE
-# ============================================================
+# ---------------------------------------------------------
 
 elif page == "NAT Table":
 
-    st.html(
-        """
-        <div class="main-title">
-            NAT Translation Table
-        </div>
-
-        <div class="subtitle">
-            Active NAT mappings created during packet simulation.
-        </div>
-        """
-    )
+    st.title("🔄 NAT Translation Table")
 
     table = nat_engine.get_translation_table()
 
-    if table:
+    if not table:
 
-        st.dataframe(
-            table,
-            width="stretch",
-            hide_index=True,
+        st.info(
+            "No active NAT mappings."
         )
 
     else:
 
-        st.info(
-            "No NAT mappings available. "
-            "Send a packet from the Packet Simulator."
+        st.dataframe(
+            table,
+            use_container_width=True,
+            hide_index=True,
         )
 
-    st.write("")
 
-    if st.button(
-        "🗑 Clear NAT Mappings",
-        width="stretch",
-    ):
-
-        nat_engine.clear_mappings()
-
-        st.success(
-            "NAT mappings cleared."
-        )
-
-        st.rerun()
-
-
-# ============================================================
+# ---------------------------------------------------------
 # ANALYTICS
-# ============================================================
+# ---------------------------------------------------------
 
 elif page == "Analytics":
 
-    st.html(
-        """
-        <div class="main-title">
-            Network Analytics
-        </div>
+    st.title("📊 Packet Analytics")
 
-        <div class="subtitle">
-            Overview of simulated packet traffic and NAT behavior.
-        </div>
-        """
+    st.write(
+        "Statistical analysis of simulated packet "
+        "traffic and NAT behavior."
     )
 
-    packets = st.session_state.packet_history
+    statistics = get_packet_statistics()
 
-    total_packets = len(packets)
+    total_packets = statistics[
+        "total_packets"
+    ]
 
-    translated_packets = sum(
-        1
-        for packet in packets
-        if packet["status"] == "TRANSLATED"
-    )
+    translated_packets = statistics[
+        "translated_packets"
+    ]
 
-    dropped_packets = sum(
-        1
-        for packet in packets
-        if packet["status"] == "DROPPED"
-    )
+    dropped_packets = statistics[
+        "dropped_packets"
+    ]
 
-    protocols = {}
+    success_rate = statistics[
+        "success_rate"
+    ]
 
-    for packet in packets:
+    # -----------------------------------------------------
+    # TOP METRICS
+    # -----------------------------------------------------
 
-        protocol = packet["protocol"]
+    st.markdown("### Traffic Summary")
 
-        protocols[protocol] = (
-            protocols.get(protocol, 0) + 1
-        )
-
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
 
-        st.metric(
+        metric_card(
             "Total Packets",
             total_packets,
         )
 
     with col2:
 
-        st.metric(
+        metric_card(
             "Translated",
             translated_packets,
         )
 
     with col3:
 
-        st.metric(
+        metric_card(
             "Dropped",
             dropped_packets,
         )
 
-    st.divider()
+    with col4:
 
-    if protocols:
+        metric_card(
+            "Success Rate",
+            f"{success_rate:.2f}%",
+        )
+
+    # -----------------------------------------------------
+    # TRAFFIC STATUS
+    # -----------------------------------------------------
+
+    st.markdown("### Traffic Status")
+
+    if total_packets == 0:
+
+        st.info(
+            "No packet traffic available yet. "
+            "Send packets from the Packet Simulator "
+            "to generate analytics."
+        )
+
+    else:
+
+        status_figure = go.Figure(
+            data=[
+                go.Pie(
+                    labels=[
+                        "Translated",
+                        "Dropped",
+                    ],
+                    values=[
+                        translated_packets,
+                        dropped_packets,
+                    ],
+                    hole=0.55,
+                    textinfo="label+percent",
+                )
+            ]
+        )
+
+        status_figure.update_layout(
+            height=380,
+            paper_bgcolor="#0b1120",
+            plot_bgcolor="#0b1120",
+            font=dict(
+                color="#e5e7eb"
+            ),
+            showlegend=True,
+            margin=dict(
+                l=20,
+                r=20,
+                t=20,
+                b=20,
+            ),
+        )
+
+        st.plotly_chart(
+            status_figure,
+            use_container_width=True,
+        )
+
+    # -----------------------------------------------------
+    # DISTRIBUTIONS
+    # -----------------------------------------------------
+
+    col1, col2 = st.columns(2)
+
+    with col1:
 
         st.markdown("### Protocol Distribution")
 
-        figure = go.Figure(
+        protocol_distribution = statistics[
+            "protocol_distribution"
+        ]
+
+        if protocol_distribution:
+
+            protocol_figure = go.Figure(
+                data=[
+                    go.Bar(
+                        x=list(
+                            protocol_distribution.keys()
+                        ),
+                        y=list(
+                            protocol_distribution.values()
+                        ),
+                        text=list(
+                            protocol_distribution.values()
+                        ),
+                        textposition="auto",
+                    )
+                ]
+            )
+
+            protocol_figure.update_layout(
+                height=380,
+                paper_bgcolor="#0b1120",
+                plot_bgcolor="#0b1120",
+                font=dict(
+                    color="#e5e7eb"
+                ),
+                xaxis_title="Protocol",
+                yaxis_title="Packets",
+                margin=dict(
+                    l=40,
+                    r=20,
+                    t=30,
+                    b=40,
+                ),
+            )
+
+            st.plotly_chart(
+                protocol_figure,
+                use_container_width=True,
+            )
+
+        else:
+
+            st.info(
+                "No protocol data available."
+            )
+
+    with col2:
+
+        st.markdown("### NAT Type Distribution")
+
+        nat_distribution = statistics[
+            "nat_distribution"
+        ]
+
+        if nat_distribution:
+
+            nat_figure = go.Figure(
+                data=[
+                    go.Bar(
+                        x=list(
+                            nat_distribution.keys()
+                        ),
+                        y=list(
+                            nat_distribution.values()
+                        ),
+                        text=list(
+                            nat_distribution.values()
+                        ),
+                        textposition="auto",
+                    )
+                ]
+            )
+
+            nat_figure.update_layout(
+                height=380,
+                paper_bgcolor="#0b1120",
+                plot_bgcolor="#0b1120",
+                font=dict(
+                    color="#e5e7eb"
+                ),
+                xaxis_title="NAT Type",
+                yaxis_title="Packets",
+                margin=dict(
+                    l=40,
+                    r=20,
+                    t=30,
+                    b=40,
+                ),
+            )
+
+            st.plotly_chart(
+                nat_figure,
+                use_container_width=True,
+            )
+
+        else:
+
+            st.info(
+                "No NAT distribution data available."
+            )
+
+    # -----------------------------------------------------
+    # DEVICE ACTIVITY
+    # -----------------------------------------------------
+
+    st.markdown("### Device Activity")
+
+    device_distribution = statistics[
+        "device_distribution"
+    ]
+
+    if device_distribution:
+
+        device_figure = go.Figure(
             data=[
                 go.Bar(
-                    x=list(protocols.keys()),
-                    y=list(protocols.values()),
-                    text=list(protocols.values()),
+                    x=list(
+                        device_distribution.keys()
+                    ),
+                    y=list(
+                        device_distribution.values()
+                    ),
+                    text=list(
+                        device_distribution.values()
+                    ),
                     textposition="auto",
                 )
             ]
         )
 
-        figure.update_layout(
-            height=350,
+        device_figure.update_layout(
+            height=380,
             paper_bgcolor="#0b1120",
-            plot_bgcolor="#111827",
+            plot_bgcolor="#0b1120",
             font=dict(
                 color="#e5e7eb"
             ),
-            xaxis_title="Protocol",
+            xaxis_title="Device",
             yaxis_title="Packets",
+            margin=dict(
+                l=40,
+                r=20,
+                t=30,
+                b=40,
+            ),
         )
 
         st.plotly_chart(
-            figure,
-            width="stretch",
-            config={
-                "displayModeBar": False
-            },
+            device_figure,
+            use_container_width=True,
         )
 
     else:
 
         st.info(
-            "No packet data available for analytics."
+            "No device activity data available."
         )
 
-    st.markdown("### Packet History")
+    # -----------------------------------------------------
+    # STATISTICS TABLE
+    # -----------------------------------------------------
 
-    if packets:
+    st.markdown("### Statistics Summary")
 
-        st.dataframe(
-            packets,
-            width="stretch",
-            hide_index=True,
-        )
+    summary_data = {
+        "Metric": [
+            "Total Packets",
+            "Translated Packets",
+            "Dropped Packets",
+            "Success Rate",
+        ],
+        "Value": [
+            total_packets,
+            translated_packets,
+            dropped_packets,
+            f"{success_rate:.2f}%",
+        ],
+    }
 
-    else:
-
-        st.info(
-            "No packet history available."
-        )
+    st.dataframe(
+        summary_data,
+        use_container_width=True,
+        hide_index=True,
+    )
